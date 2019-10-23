@@ -80,6 +80,10 @@ public class MavenWrapperDownloader {
                 }
             }
         }
+     /**
+     * Download information added 1.Initiaed & 2. Srarted
+     */
+      System.out.println("Download Initiated " + url);
         System.out.println("- Downloading from: : " + url);
 
         File outputFile = new File(baseDirectory.getAbsolutePath(), MAVEN_WRAPPER_JAR_PATH);
@@ -95,7 +99,7 @@ public class MavenWrapperDownloader {
             System.out.println("Done");
             System.exit(0);
         } catch (Throwable e) {
-            System.out.println("- Error downloading");
+            System.out.println("- Error downloading From " +outputFile.getAbsolutePath() );
             e.printStackTrace();
             System.exit(1);
         }
