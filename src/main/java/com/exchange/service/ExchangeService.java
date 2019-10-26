@@ -1,14 +1,25 @@
 package com.exchange.service;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Scanner;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DecimalFormat;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.exchange.model.CurrencyValue;
 import com.exchange.model.ExchangeRates;
+import com.exchange.model.Currency;;
 
 @Service
 public class ExchangeService {
@@ -18,17 +29,20 @@ public class ExchangeService {
 	private String apiKey;
 	
 	@Autowired
-	@Value("${app.resturl}")
+	@Value("${app.resturl.convert}")
 	private String exchangeURL;
 
+	@Autowired
+	@Value("${app.resturl.allcurrencies}")
+	private String allCurrencyURL;
+	
 	public double getExchangeRates(String currencyFrom, String currencyTo)
 	{
 		double exchangeRate;
 		String uri = exchangeURL.trim()+currencyFrom.toUpperCase()+"_"+currencyTo.toUpperCase()+
-				"&compact=ultra&apiKey="+apiKey;
+				"&compact=ultra&apiKey="+apiKey.trim();
 		RestTemplate restTemplate = new RestTemplate();
 		String result = restTemplate.getForObject(uri, String.class);
-		System.out.println("Result is "+result+result+result);
 		if(!result.trim().equals("{}"))
 		{
 			String[] value = result.split(":");
@@ -54,5 +68,24 @@ public class ExchangeService {
 			message = "Invalid currency formats found";
 			return new CurrencyValue(exchangeRates,amount,0,message);
 		}
+	}
+	
+	public List<Currency> getAllCurrencies(){
+		List<Currency> allCurrencies = new ArrayList<Currency>();
+		String uri = allCurrencyURL.trim()+apiKey.trim();
+		RestTemplate restTemplate = new RestTemplate();
+		String result = restTemplate.getForObject(uri, String.class);
+		JSONObject jsonObj = new JSONObject(result);
+		JSONObject results = jsonObj.getJSONObject("results");
+		System.out.println("Results : "+results.toString());
+		Iterator<String> keys = results.keys();
+		while(keys.hasNext()) {
+			   String key = (String)keys.next();
+			   System.out.println("Key is "+key);
+			   JSONObject value = results.getJSONObject(key);
+			   System.out.println("here you go : "+value.toString());
+			   allCurrencies.add(new Currency(value.getString("currencyName"),value.getString("id")));
+			 }
+		return allCurrencies;
 	}
 }
